@@ -1,5 +1,9 @@
 import pytest
 
+##################################
+## Step 6 - Test user creation ##
+#################################
+
 def user_payload(
     uid=1,
     name="Paul",
@@ -24,6 +28,10 @@ def test_create_user_returns_201(client):
     assert data["name"] == "Paul"
     assert data["email"] == "paul@atu.ie"
 
+########################################
+## Step 7.1 - Test duplicate user IDs ##
+########################################
+
 def test_duplicate_user_id_returns_409(client):
     client.post("/api/users", json=user_payload(uid=2))
 
@@ -32,6 +40,9 @@ def test_duplicate_user_id_returns_409(client):
     assert response.status_code == 409
     assert "exists" in response.json()["detail"].lower()
 
+#######################################
+## Step 7.2 - Test validation errors ##
+#######################################
 @pytest.mark.parametrize(
     "bad_student_id",
     ["1234567", "s1234567", "S123", "S12345678"],
@@ -42,3 +53,39 @@ def test_bad_student_id_returns_422(client, bad_student_id):
         json=user_payload(uid=3, student_id=bad_student_id),
     )
     assert response.status_code == 422
+
+###################################
+## Step 8.1 - Test listing users ##
+###################################
+def test_get_users_returns_created_users(client):
+    client.post("/api/users", json=user_payload(uid=10, name="Alice", email="alice@atu.ie"))
+
+    response = client.get("/api/users")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["user_id"] == 10
+    assert data[0]["name"] == "Alice"
+
+###############################################
+## Step 8.2 - Test getting one existing user ##
+###############################################
+
+def test_get_existing_user_returns_200(client):
+    client.post("/api/users", json=user_payload(uid=11))
+
+    response = client.get("/api/users/11")
+
+    assert response.status_code == 200
+    assert response.json()["user_id"] == 11
+
+##################################
+## Step 8.3 - Test missing user ##
+##################################
+
+def test_get_missing_user_returns_404(client):
+    response = client.get("/api/users/999")
+    
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"

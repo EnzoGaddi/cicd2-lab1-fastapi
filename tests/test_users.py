@@ -3,7 +3,6 @@ import pytest
 ##################################
 ## Step 6 - Test user creation ##
 #################################
-
 def user_payload(
     uid=1,
     name="Paul",
@@ -31,7 +30,6 @@ def test_create_user_returns_201(client):
 ########################################
 ## Step 7.1 - Test duplicate user IDs ##
 ########################################
-
 def test_duplicate_user_id_returns_409(client):
     client.post("/api/users", json=user_payload(uid=2))
 
@@ -71,7 +69,6 @@ def test_get_users_returns_created_users(client):
 ###############################################
 ## Step 8.2 - Test getting one existing user ##
 ###############################################
-
 def test_get_existing_user_returns_200(client):
     client.post("/api/users", json=user_payload(uid=11))
 
@@ -83,9 +80,43 @@ def test_get_existing_user_returns_200(client):
 ##################################
 ## Step 8.3 - Test missing user ##
 ##################################
-
 def test_get_missing_user_returns_404(client):
     response = client.get("/api/users/999")
-    
+
     assert response.status_code == 404
     assert response.json()["detail"] == "User not found"
+
+###############################################
+## Step 9.1 - Test deleting an existing user ##
+###############################################
+def test_delete_existing_user_returns_204(client):
+    client.post("/api/users", json=user_payload(uid=20))
+
+    response = client.delete("/api/users/20")
+
+    assert response.status_code == 204
+    assert response.content == b''
+
+##############################################
+## Step 9.2 - Test deleting an missing user ##
+##############################################
+def test_delete_missing_user_returns_404(client):
+    response = client.delete("/api/users/999")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+######################################################
+## Step 9.3 - Confirm the user is gone after delete ##
+######################################################
+def test_deleted_user_can_no_longer_be_retrieved(client):
+    client.post("/api/users", json=user_payload(uid=21))
+    client.delete("/api/users/21")
+
+    response = client.get("/api/users/21")
+    
+    assert response.status_code == 404
+
+
+
+

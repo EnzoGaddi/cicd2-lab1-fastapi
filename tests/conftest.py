@@ -24,9 +24,9 @@ TestingSessionLocal = sessionmaker(
 def override_get_db():
     db = TestingSessionLocal()
     try:
-    yield db
+        yield db
     finally:
-    db.close()
+        db.close()
 
 app.dependency_overrides[get_db] = override_get_db
 
@@ -38,5 +38,5 @@ def reset_database():
 
 @pytest.fixture
 def client():
-    return TestClient(app):
+    return TestClient(app)
 

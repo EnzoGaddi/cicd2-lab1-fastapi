@@ -94,7 +94,7 @@ def test_delete_missing_user_returns_404(client):
 def test_invalid_student_id_returns_422(client, bad_sid):
     response = client.post(
         "/api/users",
-        json=user_payload(sid=bad_sid),
+        json=user_payload(student_id=bad_sid),
     )
     
     assert response.status_code == 422
